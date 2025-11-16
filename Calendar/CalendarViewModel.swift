@@ -1,10 +1,16 @@
 import Foundation
 import SwiftUI
 
+struct WeightEntry {
+    let date: Date
+    let weight: Double
+}
+
 class CalendarViewModel: ObservableObject {
     @Published var currentDate = Date()
     @Published var completedDays: Set<String> = []
     @Published var initialWeight: Double?
+    @Published var dailyWeights: [String: Double] = [:]
     
     private let calendar = Calendar.current
     private let dateFormatter: DateFormatter = {
@@ -22,6 +28,7 @@ class CalendarViewModel: ObservableObject {
     init() {
         loadCompletedDays()
         loadInitialWeight()
+        loadDailyWeights()
     }
     
     func daysInMonth() -> [Date] {
@@ -84,6 +91,28 @@ class CalendarViewModel: ObservableObject {
         saveInitialWeight()
     }
     
+    func addDailyWeight(weight: Double, date: Date = Date()) {
+        let dateString = dateFormatter.string(from: date)
+        dailyWeights[dateString] = weight
+        saveDailyWeights()
+    }
+    
+    func getWeightForDate(_ date: Date) -> Double? {
+        let dateString = dateFormatter.string(from: date)
+        return dailyWeights[dateString]
+    }
+    
+    var sortedWeightEntries: [WeightEntry] {
+        return dailyWeights.compactMap { (dateString, weight) in
+            guard let date = dateFormatter.date(from: dateString) else { return nil }
+            return WeightEntry(date: date, weight: weight)
+        }.sorted { $0.date < $1.date }
+    }
+    
+    var latestWeight: Double? {
+        return sortedWeightEntries.last?.weight
+    }
+    
     private func saveInitialWeight() {
         if let weight = initialWeight {
             UserDefaults.standard.set(weight, forKey: "InitialWeight")
@@ -94,6 +123,19 @@ class CalendarViewModel: ObservableObject {
         let weight = UserDefaults.standard.double(forKey: "InitialWeight")
         if weight > 0 {
             initialWeight = weight
+        }
+    }
+    
+    private func saveDailyWeights() {
+        if let data = try? JSONEncoder().encode(dailyWeights) {
+            UserDefaults.standard.set(data, forKey: "DailyWeights")
+        }
+    }
+    
+    private func loadDailyWeights() {
+        if let data = UserDefaults.standard.data(forKey: "DailyWeights"),
+           let weights = try? JSONDecoder().decode([String: Double].self, from: data) {
+            dailyWeights = weights
         }
     }
     

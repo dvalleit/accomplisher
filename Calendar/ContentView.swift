@@ -13,6 +13,14 @@ struct ContentView: View {
                     Text("Weight")
                 }
             
+            // Weight Progress Tab
+            WeightProgressView()
+                .environmentObject(viewModel)
+                .tabItem {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Text("Progress")
+                }
+            
             // Calendar Tab
             NavigationView {
                 CalendarView()
