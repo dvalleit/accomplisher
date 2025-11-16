@@ -109,6 +109,20 @@ class CalendarViewModel: ObservableObject {
         }.sorted { $0.date < $1.date }
     }
     
+    var chartWeightEntries: [WeightEntry] {
+        var entries = sortedWeightEntries
+        
+        // Add initial weight as first entry if we have daily weights and initial weight is set
+        if let initialWeight = initialWeight, !entries.isEmpty {
+            let firstEntryDate = entries[0].date
+            let initialWeightDate = Calendar.current.date(byAdding: .day, value: -1, to: firstEntryDate) ?? firstEntryDate
+            let initialEntry = WeightEntry(date: initialWeightDate, weight: initialWeight)
+            entries.insert(initialEntry, at: 0)
+        }
+        
+        return entries
+    }
+    
     var latestWeight: Double? {
         return sortedWeightEntries.last?.weight
     }

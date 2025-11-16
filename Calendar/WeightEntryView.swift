@@ -23,7 +23,7 @@ struct WeightEntryView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    Text("\(currentWeight, specifier: "%.1f") lbs")
+                    Text("\(currentWeight, specifier: "%.1f") kg")
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(.blue)
                 }
@@ -32,11 +32,11 @@ struct WeightEntryView: View {
             
             // Weight input section
             VStack(spacing: 20) {
-                Text("Enter your weight in pounds:")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
+                Text("Enter your weight in kilograms:")
+                .font(.headline)
+                .foregroundColor(.secondary)
                 
-                TextField("Weight (lbs)", text: $weightInput)
+                TextField("Weight (kg)", text: $weightInput)
                     .font(.title2)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(RoundedBorderTextFieldStyle())

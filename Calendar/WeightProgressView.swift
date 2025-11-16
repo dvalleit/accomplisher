@@ -48,7 +48,7 @@ struct WeightProgressView: View {
                                     .fontWeight(.bold)
                                 
                                 if let latestWeight = viewModel.latestWeight {
-                                    Text("Current: \(latestWeight, specifier: "%.1f") lbs")
+                                    Text("Current: \(latestWeight, specifier: "%.1f") kg")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
@@ -62,7 +62,7 @@ struct WeightProgressView: View {
                                 HStack {
                                     Image(systemName: change >= 0 ? "arrow.up" : "arrow.down")
                                         .foregroundColor(change >= 0 ? .red : .green)
-                                    Text("\(abs(change), specifier: "%.1f") lbs")
+                                    Text("\(abs(change), specifier: "%.1f") kg")
                                         .foregroundColor(change >= 0 ? .red : .green)
                                         .fontWeight(.semibold)
                                 }
@@ -70,7 +70,7 @@ struct WeightProgressView: View {
                         }
                         
                         // Line Chart
-                        Chart(viewModel.sortedWeightEntries, id: \.date) { entry in
+                        Chart(viewModel.chartWeightEntries, id: \.date) { entry in
                             LineMark(
                                 x: .value("Date", entry.date),
                                 y: .value("Weight", entry.weight)
@@ -122,7 +122,7 @@ struct WeightProgressView: View {
                                 
                                 Spacer()
                                 
-                                Text("\(entry.weight, specifier: "%.1f") lbs")
+                                Text("\(entry.weight, specifier: "%.1f") kg")
                                     .font(.headline)
                                     .fontWeight(.semibold)
                                 
@@ -196,7 +196,7 @@ struct WeightEntrySheet: View {
                         .datePickerStyle(CompactDatePickerStyle())
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Weight (lbs)")
+                        Text("Weight (kg)")
                             .font(.headline)
                         
                         TextField("Enter weight", text: $weightInput)
