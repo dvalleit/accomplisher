@@ -6,11 +6,19 @@ struct WeightEntry {
     let weight: Double
 }
 
+struct FoodEntry {
+    let id = UUID()
+    let name: String
+    let calories: Int
+    let timestamp: Date
+}
+
 class CalendarViewModel: ObservableObject {
     @Published var currentDate = Date()
     @Published var completedDays: Set<String> = []
     @Published var initialWeight: Double?
     @Published var dailyWeights: [String: Double] = [:]
+    @Published var dailyFoodEntries: [String: [FoodEntry]] = [:]
     
     private let calendar = Calendar.current
     private let dateFormatter: DateFormatter = {
@@ -29,6 +37,7 @@ class CalendarViewModel: ObservableObject {
         loadCompletedDays()
         loadInitialWeight()
         loadDailyWeights()
+        loadDailyFoodEntries()
     }
     
     func daysInMonth() -> [Date] {
@@ -127,6 +136,36 @@ class CalendarViewModel: ObservableObject {
         return sortedWeightEntries.last?.weight
     }
     
+    // MARK: - Food Tracking Methods
+    func addFoodEntry(name: String, calories: Int, date: Date = Date()) {
+        let dateString = dateFormatter.string(from: date)
+        let foodEntry = FoodEntry(name: name, calories: calories, timestamp: date)
+        
+        if dailyFoodEntries[dateString] == nil {
+            dailyFoodEntries[dateString] = []
+        }
+        dailyFoodEntries[dateString]?.append(foodEntry)
+        saveDailyFoodEntries()
+    }
+    
+    func getFoodEntriesForDate(_ date: Date) -> [FoodEntry] {
+        let dateString = dateFormatter.string(from: date)
+        return dailyFoodEntries[dateString] ?? []
+    }
+    
+    func deleteFoodEntry(_ entry: FoodEntry) {
+        for (dateString, entries) in dailyFoodEntries {
+            if let index = entries.firstIndex(where: { $0.id == entry.id }) {
+                dailyFoodEntries[dateString]?.remove(at: index)
+                if dailyFoodEntries[dateString]?.isEmpty == true {
+                    dailyFoodEntries[dateString] = nil
+                }
+                saveDailyFoodEntries()
+                break
+            }
+        }
+    }
+    
     private func saveInitialWeight() {
         if let weight = initialWeight {
             UserDefaults.standard.set(weight, forKey: "InitialWeight")
@@ -151,6 +190,52 @@ class CalendarViewModel: ObservableObject {
            let weights = try? JSONDecoder().decode([String: Double].self, from: data) {
             dailyWeights = weights
         }
+    }
+    
+    private func saveDailyFoodEntries() {
+        // Convert FoodEntry to a serializable format
+        let serializableEntries = dailyFoodEntries.mapValues { entries in
+            entries.map { entry in
+                [
+                    "id": entry.id.uuidString,
+                    "name": entry.name,
+                    "calories": entry.calories,
+                    "timestamp": entry.timestamp.timeIntervalSince1970
+                ] as [String: Any]
+            }
+        }
+        
+        if let data = try? JSONSerialization.data(withJSONObject: serializableEntries) {
+            UserDefaults.standard.set(data, forKey: "DailyFoodEntries")
+        }
+    }
+    
+    private func loadDailyFoodEntries() {
+        guard let data = UserDefaults.standard.data(forKey: "DailyFoodEntries"),
+              let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: [[String: Any]]] else {
+            return
+        }
+        
+        var loadedEntries: [String: [FoodEntry]] = [:]
+        
+        for (dateString, entriesArray) in jsonObject {
+            var dayEntries: [FoodEntry] = []
+            
+            for entryDict in entriesArray {
+                if let name = entryDict["name"] as? String,
+                   let calories = entryDict["calories"] as? Int,
+                   let timestamp = entryDict["timestamp"] as? TimeInterval {
+                    let foodEntry = FoodEntry(name: name, calories: calories, timestamp: Date(timeIntervalSince1970: timestamp))
+                    dayEntries.append(foodEntry)
+                }
+            }
+            
+            if !dayEntries.isEmpty {
+                loadedEntries[dateString] = dayEntries
+            }
+        }
+        
+        dailyFoodEntries = loadedEntries
     }
     
     private func saveCompletedDays() {

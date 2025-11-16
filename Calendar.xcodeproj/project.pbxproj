@@ -16,6 +16,7 @@
 		1A1A1A281A1A1A1A /* WeightEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1A1A271A1A1A1A /* WeightEntryView.swift */; };
 		1A1A1A291A1A1A1A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A1A1A261A1A1A1A /* Preview Assets.xcassets */; };
 		1A1A1A321A1A1A1A /* WeightProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1A1A331A1A1A1A /* WeightProgressView.swift */; };
+		1A1A1A341A1A1A1A /* FoodTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1A1A351A1A1A1A /* FoodTrackingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		1A1A1A261A1A1A1A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		1A1A1A271A1A1A1A /* WeightEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightEntryView.swift; sourceTree = "<group>"; };
 		1A1A1A331A1A1A1A /* WeightProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightProgressView.swift; sourceTree = "<group>"; };
+		1A1A1A351A1A1A1A /* FoodTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodTrackingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 				1A1A1A211A1A1A1A /* DayView.swift */,
 				1A1A1A271A1A1A1A /* WeightEntryView.swift */,
 				1A1A1A331A1A1A1A /* WeightProgressView.swift */,
+				1A1A1A351A1A1A1A /* FoodTrackingView.swift */,
 				1A1A1A231A1A1A1A /* Assets.xcassets */,
 				1A1A1A251A1A1A1A /* Preview Content */,
 			);
@@ -158,6 +161,7 @@
 				1A1A1A221A1A1A1A /* DayView.swift in Sources */,
 				1A1A1A281A1A1A1A /* WeightEntryView.swift in Sources */,
 				1A1A1A321A1A1A1A /* WeightProgressView.swift in Sources */,
+				1A1A1A341A1A1A1A /* FoodTrackingView.swift in Sources */,
 				1A1A1A1A1A1A1A1A /* CalendarApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

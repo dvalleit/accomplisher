@@ -21,6 +21,14 @@ struct ContentView: View {
                     Text("Progress")
                 }
             
+            // Food Tracking Tab
+            FoodTrackingView()
+                .environmentObject(viewModel)
+                .tabItem {
+                    Image(systemName: "fork.knife")
+                    Text("Food")
+                }
+            
             // Calendar Tab
             NavigationView {
                 CalendarView()
