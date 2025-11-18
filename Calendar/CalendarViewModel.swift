@@ -7,9 +7,21 @@ struct WeightEntry {
 }
 
 struct FoodEntry {
-    let id = UUID()
+    let id: UUID
     let name: String
     let timestamp: Date
+    
+    init(name: String, timestamp: Date) {
+        self.id = UUID()
+        self.name = name
+        self.timestamp = timestamp
+    }
+    
+    init(id: UUID, name: String, timestamp: Date) {
+        self.id = id
+        self.name = name
+        self.timestamp = timestamp
+    }
 }
 
 class CalendarViewModel: ObservableObject {
@@ -33,10 +45,16 @@ class CalendarViewModel: ObservableObject {
     }
     
     init() {
+        print("CalendarViewModel initializing...")
         loadCompletedDays()
         loadInitialWeight()
         loadDailyWeights()
         loadDailyFoodEntries()
+        print("CalendarViewModel initialization complete")
+        print("Initial weight: \(initialWeight ?? 0)")
+        print("Daily weights count: \(dailyWeights.count)")
+        print("Daily food entries count: \(dailyFoodEntries.count)")
+        print("Completed days count: \(completedDays.count)")
     }
     
     func daysInMonth() -> [Date] {
@@ -172,8 +190,8 @@ class CalendarViewModel: ObservableObject {
     }
     
     private func loadInitialWeight() {
-        let weight = UserDefaults.standard.double(forKey: "InitialWeight")
-        if weight > 0 {
+        if UserDefaults.standard.object(forKey: "InitialWeight") != nil {
+            let weight = UserDefaults.standard.double(forKey: "InitialWeight")
             initialWeight = weight
         }
     }
@@ -193,15 +211,26 @@ class CalendarViewModel: ObservableObject {
     }
     
     private func saveDailyWeights() {
-        if let data = try? JSONEncoder().encode(dailyWeights) {
+        do {
+            let data = try JSONEncoder().encode(dailyWeights)
             UserDefaults.standard.set(data, forKey: "DailyWeights")
+            print("Daily weights saved successfully")
+        } catch {
+            print("Error saving daily weights: \(error)")
         }
     }
     
     private func loadDailyWeights() {
-        if let data = UserDefaults.standard.data(forKey: "DailyWeights"),
-           let weights = try? JSONDecoder().decode([String: Double].self, from: data) {
-            dailyWeights = weights
+        guard let data = UserDefaults.standard.data(forKey: "DailyWeights") else {
+            print("No daily weights data found")
+            return
+        }
+        
+        do {
+            dailyWeights = try JSONDecoder().decode([String: Double].self, from: data)
+            print("Daily weights loaded successfully")
+        } catch {
+            print("Error loading daily weights: \(error)")
         }
     }
     
@@ -217,36 +246,52 @@ class CalendarViewModel: ObservableObject {
             }
         }
         
-        if let data = try? JSONSerialization.data(withJSONObject: serializableEntries) {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: serializableEntries)
             UserDefaults.standard.set(data, forKey: "DailyFoodEntries")
+            print("Food entries saved successfully")
+        } catch {
+            print("Error saving food entries: \(error)")
         }
     }
     
     private func loadDailyFoodEntries() {
-        guard let data = UserDefaults.standard.data(forKey: "DailyFoodEntries"),
-              let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: [[String: Any]]] else {
+        guard let data = UserDefaults.standard.data(forKey: "DailyFoodEntries") else {
+            print("No food entries data found")
             return
         }
         
-        var loadedEntries: [String: [FoodEntry]] = [:]
-        
-        for (dateString, entriesArray) in jsonObject {
-            var dayEntries: [FoodEntry] = []
+        do {
+            guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: [[String: Any]]] else {
+                print("Invalid food entries data format")
+                return
+            }
             
-            for entryDict in entriesArray {
-                if let name = entryDict["name"] as? String,
-                   let timestamp = entryDict["timestamp"] as? TimeInterval {
-                    let foodEntry = FoodEntry(name: name, timestamp: Date(timeIntervalSince1970: timestamp))
-                    dayEntries.append(foodEntry)
+            var loadedEntries: [String: [FoodEntry]] = [:]
+            
+            for (dateString, entriesArray) in jsonObject {
+                var dayEntries: [FoodEntry] = []
+                
+                for entryDict in entriesArray {
+                    if let idString = entryDict["id"] as? String,
+                       let id = UUID(uuidString: idString),
+                       let name = entryDict["name"] as? String,
+                       let timestamp = entryDict["timestamp"] as? TimeInterval {
+                        let foodEntry = FoodEntry(id: id, name: name, timestamp: Date(timeIntervalSince1970: timestamp))
+                        dayEntries.append(foodEntry)
+                    }
+                }
+                
+                if !dayEntries.isEmpty {
+                    loadedEntries[dateString] = dayEntries
                 }
             }
             
-            if !dayEntries.isEmpty {
-                loadedEntries[dateString] = dayEntries
-            }
+            dailyFoodEntries = loadedEntries
+            print("Food entries loaded successfully")
+        } catch {
+            print("Error loading food entries: \(error)")
         }
-        
-        dailyFoodEntries = loadedEntries
     }
     
     private func saveCompletedDays() {
