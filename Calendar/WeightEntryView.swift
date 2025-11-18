@@ -80,7 +80,9 @@ struct WeightEntryView: View {
     }
     
     private func saveWeight() {
-        guard let weight = Double(weightInput), weight > 0 else {
+        // Clean the input and try to parse as double
+        let cleanedInput = weightInput.replacingOccurrences(of: ",", with: ".")
+        guard let weight = Double(cleanedInput), weight > 0 else {
             alertMessage = "Please enter a valid weight"
             showingAlert = true
             return

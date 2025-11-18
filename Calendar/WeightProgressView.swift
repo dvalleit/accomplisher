@@ -7,7 +7,8 @@ struct WeightProgressView: View {
     @State private var selectedDate = Date()
     @State private var weightInput = ""
     @State private var showingAlert = false
-    @State private var alertMessage = ""
+    @State private var showingClearAlert = false
+    @State private var alertMessage: String = ""
     
     var body: some View {
         NavigationView {
@@ -148,6 +149,14 @@ struct WeightProgressView: View {
             }
             .navigationTitle("Weight Progress")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Clear") {
+                        showingClearAlert = true
+                    }
+                    .foregroundColor(.red)
+                    .disabled(viewModel.dailyWeights.isEmpty)
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         selectedDate = Date()
@@ -174,6 +183,14 @@ struct WeightProgressView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(alertMessage)
+        }
+        .alert("Clear All Data", isPresented: $showingClearAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear", role: .destructive) {
+                viewModel.clearAllData()
+            }
+        } message: {
+            Text("This will permanently delete all your weight and food data. This action cannot be undone.")
         }
     }
 }
@@ -235,7 +252,9 @@ struct WeightEntrySheet: View {
     }
     
     private func saveWeight() {
-        guard let weight = Double(weightInput), weight > 0 else { return }
+        // Clean the input and try to parse as double
+        let cleanedInput = weightInput.replacingOccurrences(of: ",", with: ".")
+        guard let weight = Double(cleanedInput), weight > 0 else { return }
         onSave(date, weight)
         dismiss()
     }

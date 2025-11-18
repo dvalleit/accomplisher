@@ -10,7 +10,7 @@ struct FoodTrackingView: View {
     }
     
     private var totalCaloriesForDay: Int {
-        foodEntriesForSelectedDate.reduce(0) { $0 + $1.calories }
+        foodEntriesForSelectedDate.count
     }
     
     var body: some View {
@@ -35,7 +35,7 @@ struct FoodTrackingView: View {
                 // Daily summary
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Total Calories")
+                        Text("Food Items")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Text("\(totalCaloriesForDay)")
@@ -47,7 +47,7 @@ struct FoodTrackingView: View {
                     Spacer()
                     
                     VStack(alignment: .trailing) {
-                        Text("Food Items")
+                        Text("Entries")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Text("\(foodEntriesForSelectedDate.count)")
@@ -101,8 +101,8 @@ struct FoodTrackingView: View {
             }
         }
         .sheet(isPresented: $showingAddFood) {
-            AddFoodView(selectedDate: selectedDate) { foodName, calories in
-                viewModel.addFoodEntry(name: foodName, calories: calories, date: selectedDate)
+            AddFoodView(selectedDate: selectedDate) { foodName in
+                viewModel.addFoodEntry(name: foodName, date: selectedDate)
             }
         }
     }
@@ -126,17 +126,10 @@ struct FoodEntryRow: View {
             
             Spacer()
             
-            VStack(alignment: .trailing) {
-                Text("\(entry.calories) cal")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.blue)
-                
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                        .font(.caption)
-                }
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+                    .font(.caption)
             }
         }
         .padding(.vertical, 8)
@@ -145,11 +138,10 @@ struct FoodEntryRow: View {
 
 struct AddFoodView: View {
     let selectedDate: Date
-    let onSave: (String, Int) -> Void
+    let onSave: (String) -> Void
     @Environment(\.dismiss) private var dismiss
     
     @State private var foodName = ""
-    @State private var caloriesInput = ""
     @State private var showingAlert = false
     @State private var alertMessage = ""
     
@@ -170,16 +162,6 @@ struct AddFoodView: View {
                             .font(.headline)
                         
                         TextField("e.g., Chicken Salad", text: $foodName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .font(.body)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Calories")
-                            .font(.headline)
-                        
-                        TextField("e.g., 350", text: $caloriesInput)
-                            .keyboardType(.numberPad)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .font(.body)
                     }
@@ -219,18 +201,10 @@ struct AddFoodView: View {
     }
     
     private var isValidInput: Bool {
-        !foodName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !caloriesInput.isEmpty &&
-        Int(caloriesInput) != nil
+        !foodName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
-    private func saveFood() {
-        guard let calories = Int(caloriesInput), calories > 0 else {
-            alertMessage = "Please enter valid calories"
-            showingAlert = true
-            return
-        }
-        
+    private func saveFood() {        
         let trimmedName = foodName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
             alertMessage = "Please enter a food name"
@@ -238,7 +212,7 @@ struct AddFoodView: View {
             return
         }
         
-        onSave(trimmedName, calories)
+        onSave(trimmedName)
         dismiss()
     }
 }

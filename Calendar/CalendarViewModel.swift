@@ -9,7 +9,6 @@ struct WeightEntry {
 struct FoodEntry {
     let id = UUID()
     let name: String
-    let calories: Int
     let timestamp: Date
 }
 
@@ -137,9 +136,9 @@ class CalendarViewModel: ObservableObject {
     }
     
     // MARK: - Food Tracking Methods
-    func addFoodEntry(name: String, calories: Int, date: Date = Date()) {
+    func addFoodEntry(name: String, date: Date = Date()) {
         let dateString = dateFormatter.string(from: date)
-        let foodEntry = FoodEntry(name: name, calories: calories, timestamp: date)
+        let foodEntry = FoodEntry(name: name, timestamp: date)
         
         if dailyFoodEntries[dateString] == nil {
             dailyFoodEntries[dateString] = []
@@ -179,6 +178,20 @@ class CalendarViewModel: ObservableObject {
         }
     }
     
+    func clearAllData() {
+        // Clear all data
+        initialWeight = nil
+        dailyWeights.removeAll()
+        dailyFoodEntries.removeAll()
+        completedDays.removeAll()
+        
+        // Clear UserDefaults
+        UserDefaults.standard.removeObject(forKey: "InitialWeight")
+        UserDefaults.standard.removeObject(forKey: "DailyWeights")
+        UserDefaults.standard.removeObject(forKey: "DailyFoodEntries")
+        UserDefaults.standard.removeObject(forKey: "CompletedDays")
+    }
+    
     private func saveDailyWeights() {
         if let data = try? JSONEncoder().encode(dailyWeights) {
             UserDefaults.standard.set(data, forKey: "DailyWeights")
@@ -199,7 +212,6 @@ class CalendarViewModel: ObservableObject {
                 [
                     "id": entry.id.uuidString,
                     "name": entry.name,
-                    "calories": entry.calories,
                     "timestamp": entry.timestamp.timeIntervalSince1970
                 ] as [String: Any]
             }
@@ -223,9 +235,8 @@ class CalendarViewModel: ObservableObject {
             
             for entryDict in entriesArray {
                 if let name = entryDict["name"] as? String,
-                   let calories = entryDict["calories"] as? Int,
                    let timestamp = entryDict["timestamp"] as? TimeInterval {
-                    let foodEntry = FoodEntry(name: name, calories: calories, timestamp: Date(timeIntervalSince1970: timestamp))
+                    let foodEntry = FoodEntry(name: name, timestamp: Date(timeIntervalSince1970: timestamp))
                     dayEntries.append(foodEntry)
                 }
             }
